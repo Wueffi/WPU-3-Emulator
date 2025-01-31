@@ -10,10 +10,12 @@ config_version=5
 
 [application]
 
-config/name="Incel 3 Emulator"
+config/name="WPU3 Emulator"
+config/version="1.0"
 run/main_scene="res://Scenes/root.tscn"
 config/features=PackedStringArray("4.3", "Mobile")
-config/icon="res://Resources/Incel IDE Icon.png"
+boot_splash/image="res://icon.png"
+config/icon="res://icon.svg"
 
 [autoload]
 
@@ -28,7 +30,7 @@ window/stretch/mode="canvas_items"
 
 [dotnet]
 
-project/assembly_name="Incel 3 Emulator"
+project/assembly_name="WPU 3 Emulator"
 
 [rendering]
 
