@@ -211,8 +211,8 @@ func _Speed_Input_Change(value: float) -> void:
 	speed_slider.value = value
 	
 const REGISTERS = {"r0":0, "r1":1, "r2":2, "r3":3, "r4":4, "r5":5, "r6":6, "r7":7}
-const CONDITIONS = {"COUT": "0101", "NEG": "0110", "ZERO": "0111", "!COUT": "0101", "!NEG": "0110", "!ZERO": "0111","NEVER": "0000", "ALWAYS": "0100",
-					"CO": "0101", "N": "0110", "Z": "0111", "!CO": "0101", "!N": "0110", "!Z": "0111", "NEV": "0000", "ALW": "0100"}
+const CONDITIONS = {"cout": "0101", "neg": "0110", "zero": "0111", "!cout": "1101", "!neg": "1110", "!zero": "1111","never": "0000", "always": "1000",
+					"co": "0101", "n": "0110", "z": "0111", "!co": "1101", "!n": "1110", "!z": "1111", "nev": "0000", "alw": "1000"}
 
 func Parse_Literal(value: String):
 	if value.to_lower() in program_view.definitions:
@@ -242,9 +242,6 @@ var block_instruction = 0
 func Process_Instruction() -> void:
 	var split_line
 	var flag_save = flag_values.duplicate()
-	flag_values[0] = false
-	flag_values[1] = false
-	flag_values[2] = false
 	
 	if pc >= program_view.program.size():
 		split_line = [0]  # Default to NOP
@@ -265,6 +262,7 @@ func Process_Instruction() -> void:
 			regs_values[dest] = output
 			flag_values[1] = output > 127  # Negative flag
 			flag_values[2] = output == 0  # Zero flag
+			print(output == 0)
 
 		2:  # SUB
 			var regA = split_line[1]
@@ -341,13 +339,37 @@ func Process_Instruction() -> void:
 			pc = split_line[1] - 1
 
 		14:  # RET
-			pc = callstack.pop_back() - 1
+			pc = (callstack.pop_back() - 1)
 
 		15:  # BRH (Branch if condition is met)
-			var cond = split_line[1]
+			var cond_str = str(split_line[1]).to_lower()
 			var target = split_line[2]
-			if flag_save[cond / 2] != (cond % 2 == 1):
-				pc = target - 1
+			match cond_str:
+				"5":  # CARRY OUT (CO)
+					if flag_values[0]:
+						pc = target - 1
+				"6":  # NEGATIVE (N)
+					if flag_values[1]:
+						pc = target - 1
+				"7":  # ZERO (Z)
+					if flag_values[2]:
+						pc = target - 1
+				"0":  # NEVER (NEV) - Never branches
+					pass
+				"8":  # ALWAYS (ALW) - Always branches
+					pc = target - 1
+				"13":  # !CARRY OUT (!CO)
+					if not flag_values[0]:
+						pc = target - 1
+				"14":  # !NEGATIVE (!N)
+					if not flag_values[1]:
+						pc = target - 1
+				"15":  # !ZERO (!Z)
+					
+					if not flag_values[2]:
+						print(flag_values[2])
+						print("jump")
+						pc = target - 1
 
 		16:  # PST (Write to port)
 			var port = split_line[1]
@@ -365,7 +387,7 @@ func Process_Instruction() -> void:
 	regs_values[0] = 0  # Enforce r0 = 0
 	pc += 1
 	if pc >= program_view.program.size():
-		return
+		threaded_stop()
 	#program_view.set_line_gutter_text(program_view.program[pc][1], 1, " >")
 
 var timer = 0
@@ -380,9 +402,11 @@ func threaded_run():
 			return
 		Process_Instruction()
 		count += 1
-		if program_view.get_line_gutter_icon(program_view.program[pc][1], 2) != null:
-			threaded_stop()
-			return
+		if pc < program_view.program.size() and program_view.program[pc].size() > 1:
+			if program_view.get_line_gutter_icon(program_view.program[pc][1], 2) != null:
+				threaded_stop()
+				return
+
 
 func threaded_stop():
 	start_stop_button.text = "Start"

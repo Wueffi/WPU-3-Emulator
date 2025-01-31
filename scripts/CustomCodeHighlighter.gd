@@ -1,8 +1,8 @@
 class_name CustomCodeHighlighter extends SyntaxHighlighter
 
 const REGISTERS = {"r0":"000", "r1":"001", "r2":"010", "r3":"011", "r4":"100", "r5":"101", "r6":"110", "r7":"111"}
-const CONDITIONS = {"COUT": "0101", "NEG": "0110", "ZERO": "0111", "!COUT": "0101", "!NEG": "0110", "!ZERO": "0111","NEVER": "0000", "ALWAYS": "0100",
-					"CO": "0101", "N": "0110", "Z": "0111", "!CO": "0101", "!N": "0110", "!Z": "0111", "NEV": "0000", "ALW": "0100"}
+const CONDITIONS = {"cout": "0101", "neg": "0110", "zero": "0111", "!cout": "1101", "!neg": "1110", "!zero": "1111","never": "0000", "always": "1000",
+					"co": "0101", "n": "0110", "z": "0111", "!co": "1101", "!n": "1110", "!z": "1111", "nev": "0000", "alw": "1000"}
 
 func Register(value: String, line: int, instruction: String) -> String:
 	if value in REGISTERS:
