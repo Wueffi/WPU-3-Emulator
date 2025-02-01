@@ -386,8 +386,8 @@ func Process_Instruction() -> void:
 
 	regs_values[0] = 0  # Enforce r0 = 0
 	pc += 1
-	if pc >= program_view.program.size():
-		threaded_stop()
+	if pc >= 4096:
+		pc = pc - (4096 * (pc / 4096)) #Max PROM SIZE 64 Anyways
 	#program_view.set_line_gutter_text(program_view.program[pc][1], 1, " >")
 
 var timer = 0
@@ -402,10 +402,11 @@ func threaded_run():
 			return
 		Process_Instruction()
 		count += 1
-		if pc < program_view.program.size() and program_view.program[pc].size() > 1:
-			if program_view.get_line_gutter_icon(program_view.program[pc][1], 2) != null:
-				threaded_stop()
-				return
+		if pc >= program_view.program.size():
+			continue
+		if program_view.get_line_gutter_icon(program_view.program[pc][1], 2) != null:
+			threaded_stop()
+			return
 
 
 func threaded_stop():
@@ -434,9 +435,9 @@ func _process(_delta: float) -> void:
 	update_pc()
 	#screen.update_screen()
 	if previous_pc != pc:
-		if previous_pc < program_view.get_line_count():
+		if previous_pc < program_view.program.size():
 			program_view.set_line_gutter_text(program_view.program[previous_pc][1], 1, "")
-		if pc < program_view.get_line_count():
+		if pc < program_view.program.size():
 			if program_view.program.size() != 0:
 				program_view.set_line_gutter_text(program_view.program[pc][1], 1, " >")
 			else:
